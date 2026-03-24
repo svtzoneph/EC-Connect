@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile | CITIZEN-CONNECT</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/appwrite@14.0.0"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brand: { purple: '#381A8B', orange: '#FF7A45' } },
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'], }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; background-color: #F8F9FA; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        
+        .modern-input { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem 1rem; color: #111827; transition: all 0.2s; outline: none; width: 100%; }
+        .modern-input:focus { border-color: #381A8B; background: #ffffff; }
+        .modern-input:disabled { background: #f1f5f9; color: #94a3b8; cursor: not-allowed; }
+
+        /* SIDEBAR CSS (Galing sa home.html) */
+        #desktop-sidebar {
+            width: 5.5rem; 
+            transition: width 0.4s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.4s ease;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        #desktop-sidebar:hover {
+            width: 17rem;
+            box-shadow: 10px 0 25px rgba(0,0,0,0.05);
+        }
+        #desktop-sidebar .nav-text {
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        #desktop-sidebar:hover .nav-text {
+            opacity: 1;
+            transform: translateX(0);
+            transition-delay: 0.1s; 
+            pointer-events: auto;
+        }
+        #mobile-sidebar { transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
+        #mobile-overlay { transition: opacity 0.3s ease; }
+
+        /* Profile Pic Hover Effect */
+        .profile-pic-container:hover .pic-overlay { opacity: 1; }
+    </style>
+</head>
+<body class="h-screen flex text-gray-800 selection:bg-brand-orange selection:text-white">
+
+    <div id="mobile-overlay" class="fixed inset-0 bg-brand-purple/50 backdrop-blur-sm z-[60] lg:hidden opacity-0 pointer-events-none" onclick="toggleMobileSidebar()"></div>
+    <aside id="mobile-sidebar" class="bg-white h-full w-[17rem] max-w-[85vw] flex flex-col fixed z-[70] top-0 left-0 -translate-x-full lg:hidden rounded-r-[1.5rem] py-6 border-r border-gray-100 shadow-2xl transition-transform">
+        <button onclick="toggleMobileSidebar()" class="absolute top-6 right-5 text-gray-400 hover:text-brand-orange w-8 h-8 flex items-center justify-center bg-gray-50 rounded-full"><i class="fa-solid fa-xmark"></i></button>
+        <div class="flex items-center px-6 mb-8 shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center shrink-0"><i class="fa-solid fa-leaf text-brand-purple text-xl"></i></div>
+            <span class="font-bold text-brand-purple ml-4 text-lg tracking-tight">CITIZEN<span class="text-brand-orange">-CONNECT</span></span>
+        </div>
+        <nav class="flex-1 flex flex-col gap-2 px-4 overflow-y-auto">
+            <a href="home.html" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-solid fa-border-all text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-regular fa-newspaper text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">CivicFeed</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-regular fa-file-lines text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Request</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-solid fa-chart-pie text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Reports</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-regular fa-calendar-check text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Appointments</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple">
+                <i class="fa-solid fa-gear text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Settings</span>
+            </a>
+        </nav>
+        <div class="mt-auto px-4 pt-4 shrink-0 flex flex-col gap-2">
+            <a href="#" onclick="handleLogout()" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-red-500 hover:bg-red-50 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket text-xl w-6 text-center"></i><span class="ml-4 font-medium text-[15px]">Log Out</span>
+            </a>
+            <div class="flex items-center p-2 rounded-xl bg-orange-50 border border-brand-orange/20 overflow-hidden cursor-pointer w-full">
+                <img id="mobile-sidebar-pic" src="https://ui-avatars.com/api/?name=User&background=381A8B&color=fff" alt="Avatar" class="w-10 h-10 rounded-full border border-gray-200 shrink-0 object-cover">
+                <div class="ml-3 flex flex-col justify-center overflow-hidden">
+                    <span id="mobile-sidebar-name" class="font-bold text-gray-900 text-[15px] leading-tight truncate">Loading...</span>
+                    <span id="mobile-sidebar-location" class="text-[10px] text-gray-500 font-semibold mt-0.5 uppercase tracking-wide truncate">Location...</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <aside id="desktop-sidebar" class="bg-white h-full hidden lg:flex flex-col fixed z-50 top-0 left-0 rounded-tr-[2rem] rounded-br-none py-6 border-r border-gray-100">
+        <div class="flex items-center px-5 mb-8 shrink-0 h-10 mt-2">
+            <div class="w-10 h-10 rounded-xl bg-brand-purple/10 flex items-center justify-center shrink-0 hover:bg-brand-orange/20 transition-colors cursor-pointer"><i class="fa-solid fa-leaf text-brand-purple text-xl"></i></div>
+            <span class="nav-text font-bold text-brand-purple ml-4 text-lg tracking-tight cursor-default">EC<span class="text-brand-orange">Connect</span></span>
+        </div>
+        <nav class="flex-1 flex flex-col gap-2 px-3 overflow-y-auto">
+            <a href="home.html" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-solid fa-border-all text-xl w-6 text-center"></i><span class="nav-text ml-4 font-semibold text-[15px]">Dashboard</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-regular fa-newspaper text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">CivicFeed</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-regular fa-file-lines text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">Request</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-solid fa-chart-pie text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">Reports</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-regular fa-calendar-check text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">Appointments</span>
+            </a>
+            <a href="#" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-gray-500 hover:bg-gray-50 hover:text-brand-purple transition-colors">
+                <i class="fa-solid fa-gear text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">Settings</span>
+            </a>
+        </nav>
+        <div class="mt-auto px-3 pt-4 shrink-0 flex flex-col gap-2">
+            <a href="#" onclick="handleLogout()" class="flex items-center px-4 py-3 rounded-xl border-l-[3px] border-transparent text-red-500 hover:bg-red-50 transition-colors">
+                <i class="fa-solid fa-arrow-right-from-bracket text-xl w-6 text-center"></i><span class="nav-text ml-4 font-medium text-[15px]">Log Out</span>
+            </a>
+            <div class="flex items-center p-2 rounded-xl bg-orange-50 border border-brand-orange/20 overflow-hidden w-full cursor-default">
+                <img id="desktop-sidebar-pic" src="https://ui-avatars.com/api/?name=User&background=381A8B&color=fff" alt="Avatar" class="w-10 h-10 rounded-full border border-gray-200 shrink-0 object-cover">
+                <div class="nav-text ml-3 flex flex-col justify-center overflow-hidden">
+                    <span id="desktop-sidebar-name" class="font-bold text-gray-900 text-[15px] leading-tight truncate">Loading...</span>
+                    <span id="desktop-sidebar-location" class="text-[10px] text-gray-500 font-semibold mt-0.5 uppercase tracking-wide truncate">Location...</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 lg:ml-[5.5rem] flex flex-col relative min-w-0 w-full h-screen">
+        <header class="h-16 px-6 md:px-8 flex items-center justify-between shrink-0 bg-[#F8F9FA]/80 backdrop-blur-md z-30 sticky top-0">
+            <div class="flex items-center gap-4">
+                <button onclick="toggleMobileSidebar()" class="lg:hidden w-10 h-10 flex items-center justify-center text-brand-purple hover:bg-white hover:shadow-sm rounded-full transition-all focus:outline-none -ml-2">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+                <div class="text-sm font-medium text-gray-400">Portal / <span class="text-brand-purple font-semibold">My Profile</span></div>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-y-auto px-4 md:px-10 pb-20 pt-6">
+            <div class="max-w-4xl mx-auto">
+                
+                <h1 class="text-3xl font-extrabold text-gray-900 mb-2">My Profile</h1>
+                <p class="text-gray-500 mb-8">Manage your personal information and account settings.</p>
+
+                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="h-32 bg-brand-purple/10 relative"></div> <div class="px-8 pb-8 relative">
+                        
+                        <form id="profile-form" onsubmit="saveProfile(event)">
+                            
+                            <div class="flex flex-col sm:flex-row items-start sm:items-end gap-6 -mt-12 mb-8">
+                                <div class="profile-pic-container relative w-28 h-28 rounded-full border-4 border-white bg-gray-100 shadow-md overflow-hidden cursor-pointer group" onclick="document.getElementById('profile-pic-upload').click()">
+                                    <img id="profile-preview" src="https://ui-avatars.com/api/?name=User&background=381A8B&color=fff" alt="Profile" class="w-full h-full object-cover">
+                                    <div class="pic-overlay absolute inset-0 bg-black/50 flex flex-col items-center justify-center text-white opacity-0 transition-opacity">
+                                        <i class="fa-solid fa-camera mb-1"></i>
+                                        <span class="text-[10px] font-semibold">CHANGE</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="profile-pic-upload" accept="image/*" class="hidden" onchange="handleImagePreview(event)">
+                                
+                                <div class="flex-1">
+                                    <h2 id="display-name" class="text-2xl font-bold text-gray-900">Loading Name...</h2>
+                                    <p id="display-email" class="text-gray-500 font-medium">loading@email.com</p>
+                                </div>
+                                
+                                <button type="submit" id="save-btn" class="w-full sm:w-auto px-8 py-3 bg-brand-purple text-white font-bold rounded-xl hover:bg-[#2A136A] transition-colors shadow-md flex items-center justify-center gap-2">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Changes
+                                </button>
+                            </div>
+
+                            <p id="system-msg" class="hidden p-4 rounded-xl text-sm font-semibold mb-6 text-center"></p>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                
+                                <div class="md:col-span-2"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">Personal Details</h3></div>
+                                
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">First Name</label>
+                                    <input type="text" id="prof-fname" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Last Name</label>
+                                    <input type="text" id="prof-lname" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Middle Name</label>
+                                    <input type="text" id="prof-mname" class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Age</label>
+                                    <input type="number" id="prof-age" disabled class="modern-input bg-gray-50 text-gray-400">
+                                </div>
+
+                                <div class="md:col-span-2 mt-4"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">Contact Information</h3></div>
+                                
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Mobile Number</label>
+                                    <input type="text" id="prof-mobile" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Email Address</label>
+                                    <input type="email" id="prof-email" disabled class="modern-input bg-gray-50 text-gray-400" title="Email cannot be changed here.">
+                                </div>
+
+                                <div class="md:col-span-2 mt-4"><h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 pb-2">Address</h3></div>
+                                
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Province</label>
+                                    <input type="text" id="prof-province" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">City / Municipality</label>
+                                    <input type="text" id="prof-city" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Barangay</label>
+                                    <input type="text" id="prof-brgy" required class="modern-input">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-gray-500 mb-1 ml-1">Postal Code</label>
+                                    <input type="text" id="prof-postal" required class="modern-input">
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('mobile-sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            sidebar.classList.toggle('-translate-x-full');
+            if(overlay.classList.contains('pointer-events-none')) {
+                overlay.classList.remove('pointer-events-none', 'opacity-0');
+            } else {
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('pointer-events-none'), 300);
+            }
+        }
+    </script>
+
+    <script>
+        const { Client, Account, Databases, Storage, Query, ID } = Appwrite;
+        
+        const client = new Client()
+            .setEndpoint('https://sgp.cloud.appwrite.io/v1')
+            .setProject('69c159c3001a0ffae2d4');
+        
+        const account = new Account(client);
+        const databases = new Databases(client);
+        const storage = new Storage(client);
+
+        const DATABASE_ID = '69c169520039e9e2c758'; 
+        const COLLECTION_ID = 'ec_connect_id';
+        const BUCKET_ID = '69c16a060004dab09fd3';
+
+        let USER_DOC_ID = null; // Store document ID to update it later
+        let NEW_IMAGE_FILE = null; // Store new uploaded image file
+
+        // 1. LOAD USER DATA
+        async function fetchProfileData() {
+            try {
+                const user = await account.get();
+                document.getElementById('display-email').textContent = user.email;
+                document.getElementById('prof-email').value = user.email;
+                
+                const response = await databases.listDocuments(
+                    DATABASE_ID,
+                    COLLECTION_ID,
+                    [Query.equal('accountId', user.$id)]
+                );
+
+                if (response.documents.length > 0) {
+                    const doc = response.documents[0];
+                    USER_DOC_ID = doc.$id; 
+                    const fullName = `${doc.firstName} ${doc.lastName}`;
+
+                    // Set Main Profile Name
+                    document.getElementById('display-name').textContent = fullName;
+                    
+                    // Set Sidebar Profile Details
+                    document.getElementById('desktop-sidebar-name').textContent = fullName;
+                    document.getElementById('mobile-sidebar-name').textContent = fullName;
+
+                    let locationText = "Location Not Set";
+                    if(doc.barangay && doc.city && doc.province) {
+                        locationText = `${doc.barangay}, ${doc.city}, ${doc.province}`;
+                    } else if(doc.barangay && doc.city) {
+                        locationText = `${doc.barangay}, ${doc.city}`;
+                    }
+                    document.getElementById('desktop-sidebar-location').textContent = locationText;
+                    document.getElementById('mobile-sidebar-location').textContent = locationText;
+                    document.getElementById('desktop-sidebar-location').title = locationText;
+
+                    // Populate Form Fields
+                    document.getElementById('prof-fname').value = doc.firstName || '';
+                    document.getElementById('prof-lname').value = doc.lastName || '';
+                    document.getElementById('prof-mname').value = doc.middleName || '';
+                    document.getElementById('prof-age').value = doc.age || '';
+                    document.getElementById('prof-mobile').value = doc.mobileNumber || '';
+                    document.getElementById('prof-province').value = doc.province || '';
+                    document.getElementById('prof-city').value = doc.city || '';
+                    document.getElementById('prof-brgy').value = doc.barangay || '';
+                    document.getElementById('prof-postal').value = doc.postalCode || '';
+
+                    // Load Profile Picture (Prefer custom profile image over the ID picture)
+                    let currentImageId = doc.profileImageId || doc.idImageId;
+                    if (currentImageId) {
+                        const imageUrl = storage.getFilePreview(BUCKET_ID, currentImageId);
+                        document.getElementById('profile-preview').src = imageUrl;
+                        document.getElementById('desktop-sidebar-pic').src = imageUrl;
+                        document.getElementById('mobile-sidebar-pic').src = imageUrl;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+                window.location.href = 'index.html'; 
+            }
+        }
+
+        // 2. HANDLE IMAGE PREVIEW
+        function handleImagePreview(event) {
+            const file = event.target.files[0];
+            if (file) {
+                NEW_IMAGE_FILE = file; 
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Update preview in main form AND sidebar instantly
+                    document.getElementById('profile-preview').src = e.target.result;
+                    document.getElementById('desktop-sidebar-pic').src = e.target.result;
+                    document.getElementById('mobile-sidebar-pic').src = e.target.result;
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // 3. SAVE PROFILE DATA
+        async function saveProfile(e) {
+            e.preventDefault();
+            const btn = document.getElementById('save-btn');
+            const msgBox = document.getElementById('system-msg');
+            
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+            btn.disabled = true;
+            msgBox.classList.add('hidden');
+
+            try {
+                let currentProfileImageId = undefined;
+
+                // A. Upload new image if selected
+                if (NEW_IMAGE_FILE) {
+                    const uploadedFile = await storage.createFile(BUCKET_ID, ID.unique(), NEW_IMAGE_FILE);
+                    currentProfileImageId = uploadedFile.$id;
+                }
+
+                // B. Prepare Data
+                const updatedData = {
+                    firstName: document.getElementById('prof-fname').value,
+                    lastName: document.getElementById('prof-lname').value,
+                    middleName: document.getElementById('prof-mname').value,
+                    mobileNumber: document.getElementById('prof-mobile').value,
+                    province: document.getElementById('prof-province').value,
+                    city: document.getElementById('prof-city').value,
+                    barangay: document.getElementById('prof-brgy').value,
+                    postalCode: document.getElementById('prof-postal').value,
+                };
+
+                if (currentProfileImageId) {
+                    updatedData.profileImageId = currentProfileImageId;
+                }
+
+                // C. Update Database
+                await databases.updateDocument(DATABASE_ID, COLLECTION_ID, USER_DOC_ID, updatedData);
+
+                // D. Update UI
+                const newFullName = `${updatedData.firstName} ${updatedData.lastName}`;
+                await account.updateName(newFullName);
+                
+                document.getElementById('display-name').textContent = newFullName;
+                document.getElementById('desktop-sidebar-name').textContent = newFullName;
+                document.getElementById('mobile-sidebar-name').textContent = newFullName;
+                
+                const newLocText = `${updatedData.barangay}, ${updatedData.city}, ${updatedData.province}`;
+                document.getElementById('desktop-sidebar-location').textContent = newLocText;
+                document.getElementById('mobile-sidebar-location').textContent = newLocText;
+
+                msgBox.textContent = "Profile updated successfully!";
+                msgBox.className = "p-4 rounded-xl text-sm font-semibold mb-6 text-center bg-green-50 text-green-600 block";
+                NEW_IMAGE_FILE = null; 
+                
+            } catch (error) {
+                msgBox.textContent = "Error: " + error.message;
+                msgBox.className = "p-4 rounded-xl text-sm font-semibold mb-6 text-center bg-red-50 text-red-600 block";
+            } finally {
+                btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save Changes';
+                btn.disabled = false;
+            }
+        }
+
+        // 4. LOGOUT
+        async function handleLogout() {
+            try {
+                await account.deleteSession('current');
+                window.location.href = 'index.html';
+            } catch (error) {
+                alert("Error logging out.");
+            }
+        }
+
+        fetchProfileData();
+    </script>
+</body>
+</html>
